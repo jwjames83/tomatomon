@@ -1,4 +1,4 @@
-#include "dotstar.h"
+#include "../include/dotstar.h"
 static const char *TAG = "DOTSTAR";
 spi_device_handle_t spi;
 spi_bus_config_t led_data_bus_cfg={

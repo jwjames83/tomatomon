@@ -1,20 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "tinyusb.h"
+#include "tusb_cdc_acm.h"
+#include "tusb_console.h"
 #include <sys/reent.h>
 #include "esp_log.h"
 #include "esp_vfs.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "tinyusb.h"
-#include "tusb_cdc_acm.h"
-#include "tusb_console.h"
 #include "sdkconfig.h"
 #include "driver/gpio.h"
 
-#include "../components/sensors/src/sensor.h"
+#include "../components/soilsensor/sensor.h"
 
 extern "C" {
     void app_main();
+    // esp_err_t esp_tusb_init_console(int cdc_intf);
 }
 
 static const char *TAG = "TOMATOMON";
@@ -24,11 +25,11 @@ static const gpio_num_t LED_GPIO = GPIO_NUM_13;
  * @brief Configure the GPIO for the LED
  *
  */
-static void configure_led(void)
-{
-    gpio_reset_pin(LED_GPIO);
-    gpio_set_direction(LED_GPIO, GPIO_MODE_OUTPUT);
-}
+// static void configure_led(void)
+// {
+//     gpio_reset_pin(LED_GPIO);
+//     gpio_set_direction(LED_GPIO, GPIO_MODE_OUTPUT);
+// }
 
 /**
  * @brief Set LED state
@@ -63,7 +64,7 @@ static void blink_led_task(void *parameters)
  */
 void poll_sensor_task(void *parms)
 {
-    Sensor* sensor = new Sensor ();
+    Sensor* sensor = new Sensor (UART_NUM_1, Sensor::BPS_9600);
     for (;;)
     {
         sensor->query_sensor();
@@ -73,6 +74,7 @@ void poll_sensor_task(void *parms)
 
 void app_main(void)
 {
+    
     // Configure tinyusb first
     tinyusb_config_t tusb_cfg = {
         .descriptor = NULL,
@@ -93,7 +95,7 @@ void app_main(void)
 
     ESP_ERROR_CHECK(tusb_cdc_acm_init(&amc_cfg));
    
-    esp_tusb_init_console(TINYUSB_CDC_ACM_0); // log to usb
+    // ESP_ERROR_CHECK(esp_tusb_init_console(TINYUSB_CDC_ACM_0)); // log to usb
 
     // Holding off to give us time to connect
     vTaskDelay(5000 / portTICK_PERIOD_MS);
